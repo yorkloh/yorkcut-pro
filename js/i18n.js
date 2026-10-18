@@ -133,12 +133,27 @@
             "Same segment count: binds this track to every segment (as separate pools).",
         "权重合计可用。": "Weights OK.",
         "有一层权重合计超过 100%。保存后该层会退回均分。":
-            "One level exceeds 100%; after saving it falls back to an even split."
+            "One level exceeds 100%; after saving it falls back to an even split.",
+        "文件夹": "Folder",
+        "画面对齐口播": "Video aligns to voice",
+        "不重复": "No repeat",
+        "删": "Del",
+        "按子文件夹收缩段数": "Shrink to subfolders",
+        "按子文件夹重铺（调整段数）": "Re-lay from subfolders (adjust count)",
+        "这个文件夹里没有可用素材。": "No usable media in this folder.",
+        "发现新版本 v": "New version v",
+        "父级：": "Parent: ",
+        "子文件夹多于现有段：可追加段，或只填已有前 ":
+            "More subfolders than segments: append, or fill only the first ",
+        "子文件夹少于现有段：可只更新前 ": "Fewer subfolders than segments: update only the first ",
+        "第 ": "Segment "
     };
 
     /** 动态文案：正则 → 替换（顺序敏感，先具体后笼统） */
     var PATTERNS = [
         [/^第\s*(\d+)\s*段$/, function (m) { return "Segment " + m[1]; }],
+        [/^脚本\s*(\d+)$/, function (m) { return "Script " + m[1]; }],
+        [/^(.+?)\s*(\d+)\s*段$/, function (m) { return (tokenize(m[1]) || m[1]) + " " + m[2] + " segments"; }],
         [/^抽取权重\s*·\s*(.+)$/, function (m) { return "Pick weights · " + (tokenize(m[1]) || m[1]); }],
         [/^一键铺段\s*·\s*(.+)$/, function (m) { return "Auto-fill segments · " + (tokenize(m[1]) || m[1]); }],
         [/^产能粗估\s*≈\s*(.+)$/, function (m) { return "Est. capacity ≈ " + m[1]; }],

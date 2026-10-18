@@ -1,0 +1,23 @@
+# 本地/构建产物
+node_modules/
+发布/
+_backup/
+__pycache__/
+*.pyc
+
+# 用户数据与私有材料
+保存预设/
+devtools/secrets/
+tools/secrets/
+*.pem
+*.yorkcut.json
+*.log
+
+# 高光模板请自备，不入库（避免误提交 Adobe 自带模板）
+assets/*.mogrt
+!assets/README.md
+
+# 系统
+.DS_Store
+Thumbs.db
+desktop.ini

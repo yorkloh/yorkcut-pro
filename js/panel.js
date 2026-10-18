@@ -3990,6 +3990,18 @@
 
     function initAppVersionUi() {
         if (appVerEl) appVerEl.textContent = "v" + APP_VERSION;
+        // 「检查更新」：用系统浏览器打开 Releases 页面（不联网、不上报，纯手动）
+        var upEl = document.getElementById("ycUpdate");
+        if (upEl) {
+            upEl.addEventListener("click", function () {
+                try {
+                    window.cep.util.openURLInDefaultBrowser(
+                        "https://github.com/yorkloh/yorkcut-pro/releases");
+                } catch (eUpdate) {
+                    try { window.open("https://github.com/yorkloh/yorkcut-pro/releases", "_blank"); } catch (e2) {}
+                }
+            });
+        }
         if (!appVerEl) return;
         var pressTimer = 0;
         appVerEl.addEventListener("mousedown", function () {

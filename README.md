@@ -18,6 +18,10 @@
 
 **从哪里开始**
 
+[![点击观看演示视频](assets/demo-cover.png)](https://my.feishu.cn/wiki/Q5FdwbZjaiZ2FSkUhgfc8GGZnBc?from=from_copylink)
+
+> 👆 **点击封面观看完整演示**（飞书文档）
+
 - 📦 **[安装教程 INSTALL.md](INSTALL.md)** — 人类和 AI 助手都能照做的安装流程（含无人值守脚本与校验命令）
 - 📘 **[使用教程 USAGE.md](USAGE.md)** — 素材目录结构、文案格式、生成流程、日志与排错
 - 📄 [COMMERCIAL.md](COMMERCIAL.md) — 商业许可 | [CONTRIBUTING.md](CONTRIBUTING.md) — 贡献与 CLA | [TRADEMARK.md](TRADEMARK.md) — 名称使用规则

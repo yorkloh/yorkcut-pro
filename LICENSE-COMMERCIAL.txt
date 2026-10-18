@@ -1,0 +1,23 @@
+YorkCut Pro — Dual Licensing Notice
+==================================
+
+Copyright (C) 2026 Luo Yongkang (罗永康)
+
+This software is released under the GNU Affero General Public License,
+version 3 or later (AGPL-3.0-or-later).  The full text is in the file LICENSE.
+
+In addition, the copyright holder offers a separate COMMERCIAL LICENSE covering
+uses that the AGPL does not permit, most importantly:
+
+  * distributing a modified version without publishing its source code;
+  * embedding the software in a closed-source product or closed-source service;
+  * obtaining written terms, warranty, indemnity or support commitments.
+
+Nothing in this notice limits the rights granted to you by the AGPL.
+If you use the software under the AGPL, this file does not apply to you.
+
+Commercial licensing contact:
+  Luo Yongkang <1141673084@qq.com>
+
+See COMMERCIAL.md for details, and COMMERCIAL-LICENSE-TEMPLATE.md for the
+agreement outline.

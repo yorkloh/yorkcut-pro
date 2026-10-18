@@ -103,8 +103,63 @@
         "音效": "SFX",
         "文案": "Text",
         "字幕": "Subtitles",
-        "高光": "Highlight"
+        "高光": "Highlight",
+        "脚本": "Script",
+        "背景音": "BGM",
+        "删除": "Delete",
+        "变速与口播一致": "Speed follows voice",
+        "超长素材": "Long clips",
+        "从头截取": "Trim from head",
+        "随机时间点": "Random point",
+        "镜头数": "Shots",
+        "本段重复": "Repeat",
+        "保留原声": "Keep audio",
+        "水平翻转": "Flip H",
+        "随机放大": "Random zoom",
+        "背景音循环": "Loop BGM",
+        "铺段": "Fill",
+        "未添加 · 点 +轨": "Not added · click +Track",
+        "未选择": "None",
+        "独立": "Separate",
+        "权重": "Weights",
+        "主": "Main",
+        "确认铺段": "Confirm fill",
+        "全→1": "All→1",
+        "+轨": "+Track",
+        "画面轨（V）· 上=靠上": "Video track (V) · upper = on top",
+        "声音轨（A）· 不可拖到画面上方": "Audio track (A) · cannot go above video",
+        "字幕轨 / 高光图形源": "Caption track / highlight source",
+        "段数一致，将绑定到各段该轨（设为独立）。":
+            "Same segment count: binds this track to every segment (as separate pools).",
+        "权重合计可用。": "Weights OK.",
+        "有一层权重合计超过 100%。保存后该层会退回均分。":
+            "One level exceeds 100%; after saving it falls back to an even split."
     };
+
+    /** 动态文案：正则 → 替换（顺序敏感，先具体后笼统） */
+    var PATTERNS = [
+        [/^第\s*(\d+)\s*段$/, function (m) { return "Segment " + m[1]; }],
+        [/^抽取权重\s*·\s*(.+)$/, function (m) { return "Pick weights · " + (tokenize(m[1]) || m[1]); }],
+        [/^一键铺段\s*·\s*(.+)$/, function (m) { return "Auto-fill segments · " + (tokenize(m[1]) || m[1]); }],
+        [/^产能粗估\s*≈\s*(.+)$/, function (m) { return "Est. capacity ≈ " + m[1]; }],
+        [/^产能粗估\s*[—-]\s*$/, function () { return "Est. capacity —"; }],
+        [/^(.+?)\s*→\s*字幕轨$/, function (m) { return (tokenize(m[1]) || m[1]) + " → Captions"; }],
+        [/^(.+?)\s*→\s*V轨图形$/, function (m) { return (tokenize(m[1]) || m[1]) + " → V graphic"; }]
+    ];
+
+    /** 复合文案的子词替换（最长优先），用于「画面 · 口播×1 · 音效 · 背景音 · 字幕 · 高光」这类拼接串 */
+    var TOKENS = [
+        ["字幕轨", "caption track"],
+        ["画面轨", "video track"],
+        ["声音轨", "audio track"],
+        ["背景音", "BGM"],
+        ["字幕", "captions"],
+        ["高光", "highlight"],
+        ["画面", "video"],
+        ["口播", "voice"],
+        ["音效", "SFX"],
+        ["段", "segment"]
+    ];
 
     var ATTR = {
         "删除本机 YorkCut 扩展；可选清除缓存/日志": "Remove the local YorkCut extension; optionally clear cache and logs",
@@ -165,12 +220,32 @@
         return "zh";
     }
 
+    var CJK_RE = /[\u4e00-\u9fff]/;
+
+    function tokenize(s) {
+        var out = s;
+        var changed = false;
+        for (var i = 0; i < TOKENS.length; i++) {
+            if (out.indexOf(TOKENS[i][0]) >= 0) {
+                out = out.split(TOKENS[i][0]).join(TOKENS[i][1]);
+                changed = true;
+            }
+        }
+        return changed ? out : null;
+    }
+
     function lookup(text) {
         if (lang !== "en") return null;
         var key = String(text == null ? "" : text);
         var trimmed = key.replace(/^\s+|\s+$/g, "");
         if (!trimmed) return null;
         if (TEXT[trimmed]) return TEXT[trimmed];
+        var i;
+        for (i = 0; i < PATTERNS.length; i++) {
+            var m = trimmed.match(PATTERNS[i][0]);
+            if (m) return PATTERNS[i][1](m);
+        }
+        if (CJK_RE.test(trimmed)) return tokenize(trimmed);
         return null;
     }
 
@@ -237,8 +312,9 @@
 
     function updateButton() {
         if (!btn) return;
-        btn.textContent = (lang === "en") ? "中文" : "EN";
-        btn.title = (lang === "en") ? "切换到中文 / Switch to Chinese" : "Switch to English / 切换到英文";
+        var label = (lang === "en") ? "Switch to Chinese切换为中文" : "Switch to English切换为英语";
+        btn.textContent = label;
+        btn.title = label;
     }
 
     function ensureButton() {
@@ -246,16 +322,20 @@
         btn = document.createElement("button");
         btn.type = "button";
         btn.id = "ycLangBtn";
+        btn.className = "yc-lang-btn";
         btn.setAttribute("style", [
-            "position:fixed", "right:8px", "bottom:8px", "z-index:99999",
-            "padding:2px 8px", "font-size:11px", "line-height:16px",
-            "background:#3a3a3a", "color:#ddd", "border:1px solid #555",
-            "border-radius:10px", "cursor:pointer", "opacity:0.85"
+            "margin-left:auto", "margin-right:8px", "padding:2px 10px",
+            "font-size:11px", "line-height:18px", "background:#3a3a3a",
+            "color:#e6e6e6", "border:1px solid #5a5a5a", "border-radius:11px",
+            "cursor:pointer", "white-space:nowrap"
         ].join(";"));
         btn.addEventListener("click", function () {
             setLang(lang === "en" ? "zh" : "en");
         });
-        var host = document.body || document.documentElement;
+        // 放在顶部标题行；找不到就退回 header
+        var host = document.querySelector("header .header-top") ||
+            document.querySelector("header") ||
+            document.body;
         if (host) host.appendChild(btn);
         updateButton();
     }

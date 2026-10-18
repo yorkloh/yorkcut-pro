@@ -1,0 +1,28 @@
+# NOTICE · 第三方组件与声明
+
+## Adobe Premiere Pro / CEP
+
+本扩展运行于 Adobe Premiere Pro 的 CEP 环境。使用本扩展需自行拥有合法的
+Adobe Premiere Pro 授权。本项目与 Adobe 无隶属关系，未获得其背书。
+
+## 不含 Adobe 自带资源
+
+本仓库**不包含** Adobe Premiere Pro 自带的任何模板、素材或字体
+（例如 Essential Graphics 中的 Basic Title）。若你在 `assets/` 下看到 `.mogrt`，
+那是使用者自行提供的，其版权归各自作者。
+
+## ffmpeg
+
+本项目**不打包** ffmpeg。安装脚本在用户机器缺少 ffmpeg 时会调用其官方渠道获取；
+ffmpeg 由其作者以 LGPL/GPL 分发，相关权利义务见 ffmpeg 官方说明。
+本项目对 ffmpeg 仅作命令行调用，不构成再分发。
+
+## 字体
+
+界面使用系统字体，代码不内嵌任何字体文件。高光图形渲染使用的字体来自用户自备的
+`.mogrt` 模板与本机已安装字体，请自行确认字体授权。
+
+## 作者签名
+
+源码中保留一处作者印记（字母藏头），用于标识作者身份；
+它是可选的、删除不影响任何功能（详见 `TRADEMARK.md`）。

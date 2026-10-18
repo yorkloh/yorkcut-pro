@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <title>YorkCut 批量混剪</title>
+    <link rel="stylesheet" href="css/panel.css?v=110t12"/>
+    <style>html,body{margin:0;height:100%;background:#1e1e1e;color:#ccc;}</style>
+</head>
+<body>
+    <div id="app" class="app">
+        <header>
+            <div class="header-top">
+                <h1>YorkCut 批量混剪</h1>
+                <button id="uninstallBtn" type="button" class="danger" title="删除本机 YorkCut 扩展；可选清除缓存/日志">卸载…</button>
+            </div>
+            <p>工具栏已分行 · 去重/转场可浮出拖拽 · 点标题栏拖动，点「停靠」收回。</p>
+        </header>
+        <div id="banner" class="banner hidden"></div>
+
+        <div class="script-bar">
+            <div id="scriptTabs" class="script-tabs"></div>
+            <button id="addScript" type="button">+ 脚本</button>
+            <div class="preset-wrap">
+                <span class="preset-label">预设</span>
+                <button id="presetToggle" type="button" class="preset-toggle">无 ▾</button>
+                <div id="presetMenu" class="preset-menu hidden">
+                    <button type="button" data-preset-act="none" class="preset-item"><span class="check" id="presetCheckNone">✓</span>无</button>
+                    <button type="button" data-preset-act="save" class="preset-item">保存当前为…</button>
+                    <button type="button" data-preset-act="saveAs" class="preset-item">另存到…</button>
+                    <button type="button" data-preset-act="browse" class="preset-item">浏览打开…</button>
+                    <button type="button" data-preset-act="folder" class="preset-item">设置预设文件夹…</button>
+                    <div class="preset-sep"></div>
+                    <div id="presetList"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar-stack">
+            <div class="toolbar toolbar-seg">
+                <span class="toolbar-label">段</span>
+                <button id="addRow" type="button">添加一段</button>
+                <button id="segCopy" type="button" title="复制当前选中段">复制段</button>
+                <button id="segPaste" type="button" title="粘贴到选中段后方">粘贴段</button>
+                <button id="segLeft" type="button">←</button>
+                <button id="segRight" type="button">→</button>
+                <button id="segMerge" type="button" title="与下一段合并">合并</button>
+                <button id="segSplit" type="button" title="拆出副本">拆分</button>
+                <button id="clearInvalidLinks" type="button" title="只清除标红的无效链接，不会自动执行">清除无效链</button>
+                <button id="resetFloatLayout" type="button" title="收回所有浮出块">重置浮层</button>
+            </div>
+            <p class="dock-hint">下方功能块可「浮出」后在面板内拖动；点「停靠」收回原位。</p>
+        </div>
+
+        <div id="dockHome" class="dock-home">
+            <div class="floatable" data-float-id="gen" id="floatGen">
+                <div class="float-head">
+                    <span>生成设置</span>
+                    <span class="float-head-actions">
+                        <button type="button" data-float-act="pop" title="在面板内浮出可拖拽">浮出</button>
+                        <button type="button" data-float-act="dock" class="hidden" title="停回原位">停靠</button>
+                    </span>
+                </div>
+                <div class="toolbar toolbar-gen">
+                    <label class="field">生成条数 <input id="count" type="number" min="1" max="99" value="1"/></label>
+                    <label class="field">帧率
+                        <select id="fps" class="sel-fps">
+                            <option>24</option>
+                            <option>25</option>
+                            <option selected>30</option>
+                            <option>50</option>
+                            <option>60</option>
+                        </select>
+                    </label>
+                    <label class="field"><input id="enforce24" type="checkbox" checked/> 24帧保护</label>
+                    <label class="field">序列名前缀 <input id="nameBase" type="text" value="YorkCut" class="input-namebase"/></label>
+                    <span id="capacity" class="capacity">产能粗估 —</span>
+                </div>
+            </div>
+
+            <div class="floatable" data-float-id="fx" id="floatFx">
+                <div class="float-head">
+                    <span>去重 / 转场</span>
+                    <span class="float-head-actions">
+                        <button type="button" data-float-act="pop">浮出</button>
+                        <button type="button" data-float-act="dock" class="hidden">停靠</button>
+                    </span>
+                </div>
+                <div class="toolbar toolbar-fx">
+                    <label class="field" title="同文件在成片中的复用限制；不够时自动放宽并警告">
+                        去重
+                        <select id="dedupeMode" class="sel-dedupe" title="同文件复用限制">
+                            <option value="off">关</option>
+                            <option value="sequence" selected>单条内</option>
+                            <option value="batch">整批</option>
+                        </select>
+                    </label>
+                    <label class="field" title="每文件最多出现次数">
+                        最多
+                        <input id="dedupeMax" type="number" min="1" max="20" value="1" class="zoom-num"/>
+                    </label>
+                    <label class="field" title="Premiere 画面转场（QE）">
+                        转场
+                        <select id="transitionMode" class="sel-tr-mode">
+                            <option value="off" selected>关</option>
+                            <option value="fixed">固定</option>
+                            <option value="random">随机</option>
+                        </select>
+                    </label>
+                    <label class="field tr-extra" id="trNameField">
+                        转场名
+                        <select id="transitionName" class="sel-tr-name"></select>
+                    </label>
+                    <label class="field tr-extra" id="trFramesField">
+                        帧数
+                        <input id="transitionFrames" type="number" min="2" max="60" value="8" class="zoom-num"/>
+                    </label>
+                    <button id="transitionLibBtn" type="button" class="tr-extra" title="勾选参与随机的转场">转场库…</button>
+                </div>
+            </div>
+
+            <div class="floatable" data-float-id="media" id="floatMedia">
+                <div class="float-head">
+                    <span>高光 / 缩放</span>
+                    <span class="float-head-actions">
+                        <button type="button" data-float-act="pop">浮出</button>
+                        <button type="button" data-float-act="dock" class="hidden">停靠</button>
+                    </span>
+                </div>
+                <div class="toolbar toolbar-media">
+                    <label class="field" title="高光铺到画面轨顶层的 Motion Graphics 模板">
+                        高光图形
+                        <input id="highlightMogrt" type="text" placeholder="选择 .mogrt" readonly class="input-mogrt"/>
+                        <button id="pickMogrt" type="button">浏览</button>
+                        <button id="clearMogrt" type="button">清</button>
+                    </label>
+                    <label class="field" title="可选。留空则只用 Premiere 探针。">
+                        ffprobe
+                        <input id="ffprobePath" type="text" placeholder="可选路径" class="input-ffprobe"/>
+                    </label>
+                    <label class="field" title="口播文件夹里的视频会先抽出 wav 再抽签。留空则尝试用 ffprobe 同目录的 ffmpeg。">
+                        ffmpeg
+                        <input id="ffmpegPath" type="text" placeholder="可选路径" class="input-ffprobe"/>
+                    </label>
+                    <label class="field">界面缩放
+                        <input id="uiZoomRange" type="range" min="50" max="200" value="100"/>
+                        <input id="uiZoomInput" type="number" min="50" max="200" value="100" class="zoom-num"/>
+                        <span>%</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="board-shell">
+            <div class="board-row">
+                <div id="boardScroll" class="board-scroll">
+                    <div id="rows" class="board"></div>
+                </div>
+                <div id="vZoomBar" class="vzoom-bar" title="拖中间：纵向滚动&#10;拖上下两端灰块：拉伸缩放段板高度（与底栏左右把手同类）">
+                    <div id="vZoomThumb" class="vzoom-thumb" title="拖中间滚动；拖上下两端缩放高度">
+                        <div class="vzoom-handle top" data-vedge="top" title="向上/下拖：缩放段板高度"></div>
+                        <div class="vzoom-handle bottom" data-vedge="bottom" title="向上/下拖：缩放段板高度"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="zoomBar" class="zoom-bar" title="拖中间滚动；拖左右把手缩放列宽">
+                <div id="zoomThumb" class="zoom-thumb">
+                    <div class="zoom-handle left" data-edge="left"></div>
+                    <div class="zoom-handle right" data-edge="right"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <label class="field"><input id="insert" type="checkbox"/> 额外：把新建序列嵌到当前时间轴播放头</label>
+            <button id="generate" class="primary" type="button">新建序列</button>
+            <button id="cancelGen" type="button" class="danger hidden" title="在分片间隙终止；当前 Premiere 脚本片段结束后生效">终止生成</button>
+        </div>
+
+        <div class="floatable floatable-log" data-float-id="log" id="floatLog">
+            <div class="float-head">
+                <span>日志</span>
+                <span class="float-head-actions">
+                    <button type="button" data-float-act="pop" title="浮出后可拖动">浮出</button>
+                    <button type="button" data-float-act="dock" class="hidden">停靠</button>
+                </span>
+            </div>
+            <div class="log-panel">
+                <div class="log-bar">
+                    <button id="logToggle" type="button" class="log-toggle" title="展开/收起日志">日志 ▸</button>
+                    <span id="logStatus" class="log-status">就绪</span>
+                    <label class="field log-diag-label" title="显示调用原始返回等诊断信息">
+                        <input id="logDiag" type="checkbox"/> 诊断
+                    </label>
+                    <button id="openLogFolder" type="button" title="打开加密日志目录">日志文件夹</button>
+                </div>
+                <pre id="log" class="hidden"></pre>
+            </div>
+        </div>
+        <p class="footer"><span id="hostLine">Premiere 2021 及以上 · 窗口 &gt; 扩展 &gt; YorkCut</span> · <span id="appVer" class="app-ver" title="长按 1 秒切换诊断模式">v—</span></p>
+        <div id="floatLayer" class="float-layer"></div>
+    </div>
+
+    <div id="uninstallModal" class="modal hidden">
+        <div class="dialog small">
+            <h3>卸载 YorkCut</h3>
+            <p class="hint">将删除本机 CEP 扩展目录。清除数据会一并删除时长缓存、加密日志与面板本地设置。</p>
+            <label class="field"><input id="uninstallClearData" type="checkbox"/> 同时清除本机 YorkCutPro 数据</label>
+            <div class="dialog-actions">
+                <button id="uninstallCancel" type="button">取消</button>
+                <button id="uninstallOk" class="danger" type="button">确认卸载</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="weightModal" class="modal hidden">
+        <div class="dialog">
+            <h3 id="weightTitle">抽取权重</h3>
+            <p class="hint">勾选要参与抽签的文件夹。同级不足 100% 会等比放大，超过 100% 则这一层改为均分。不勾选则整层均分。</p>
+            <div id="weightTree"></div>
+            <p id="weightRadar"></p>
+            <div class="dialog-actions">
+                <button id="weightCancel" type="button">取消</button>
+                <button id="weightOk" class="primary" type="button">锁定策略</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="presetNameModal" class="modal hidden">
+        <div class="dialog small">
+            <h3>保存预设</h3>
+            <p class="hint">自定义预设名称（同名将覆盖）。</p>
+            <input id="presetNameInput" type="text" class="preset-name-input" placeholder="例如：口播双轨竖屏"/>
+            <div class="dialog-actions">
+                <button id="presetNameCancel" type="button">取消</button>
+                <button id="presetNameOk" class="primary" type="button">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="layoutModal" class="modal hidden">
+        <div class="dialog">
+            <h3 id="layoutTitle">一键铺段</h3>
+            <p class="hint" id="layoutHint">父级下第一层子文件夹将作为段（自然序）。</p>
+            <pre id="layoutPreview" class="layout-preview"></pre>
+            <p class="hint" id="layoutConflict"></p>
+            <label class="field"><input id="layoutSyncLayers" type="checkbox"/> 同步到该轨已有的其它层（默认关，确认后才改）</label>
+            <div class="dialog-actions layout-actions">
+                <button id="layoutCancel" type="button">取消</button>
+                <button id="layoutFill" type="button" class="hidden">只填已有段</button>
+                <button id="layoutExpand" type="button" class="hidden">追加段并铺满</button>
+                <button id="layoutReplace" class="primary" type="button">按子文件夹铺段</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="transitionLibModal" class="modal hidden">
+        <div class="dialog">
+            <h3>转场库（Premiere）</h3>
+            <p class="hint">勾选参与「库内随机」的转场。名称需与本机 Premiere 已安装转场一致。</p>
+            <div id="transitionLibList" class="transition-lib-list"></div>
+            <div class="dialog-actions">
+                <button id="transitionLibCancel" type="button">取消</button>
+                <button id="transitionLibOk" class="primary" type="button">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="genPreviewModal" class="modal hidden">
+        <div class="dialog">
+            <h3>生成前确认</h3>
+            <pre id="genPreviewBody" class="layout-preview"></pre>
+            <div class="dialog-actions">
+                <button id="genPreviewCancel" type="button">返回修改</button>
+                <button id="genPreviewOk" class="primary" type="button">确认写入 Premiere</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/CSInterface.js?v=110t12"></script>
+    <script src="js/app-config.js?v=110t12"></script>
+    <script src="js/picker.js?v=110t12"></script>
+    <script src="js/edit.js?v=110t12"></script>
+    <script src="js/float-ui.js?v=110t12"></script>
+    <script src="js/panel.js?v=110t12"></script>
+</body>
+</html>

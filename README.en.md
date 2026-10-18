@@ -23,8 +23,11 @@
 
 > 👆 **Click the cover to watch the full demo** (Feishu doc, Chinese narration)
 
+- 📥 **[DOWNLOAD.en.md](DOWNLOAD.en.md)** — which asset to download, verification, mirrors, troubleshooting
 - 📦 **[INSTALL.en.md](INSTALL.en.md)** — step-by-step install (human + AI agent, with unattended script and verification)
+- 🔄 **[UPDATE.en.md](UPDATE.en.md)** — check for updates / overwrite upgrade (keeps settings) / rollback / clean reinstall
 - 📘 **[USAGE.en.md](USAGE.en.md)** — folder layout, caption format, generation flow, logs, FAQ
+- 🗒 [CHANGELOG.md](CHANGELOG.md) — release history
 - 中文文档：[README.md](README.md) · [INSTALL.md](INSTALL.md) · [USAGE.md](USAGE.md)
 
 ---

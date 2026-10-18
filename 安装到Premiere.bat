@@ -2,6 +2,35 @@
 setlocal
 set "SRC=%~dp0"
 set "DEST=%APPDATA%\Adobe\CEP\extensions\com.yorkcut.pro"
+
+echo.
+echo  ================================================================
+echo   YorkCut Pro 1.0.0   Batch Editor for Adobe Premiere Pro
+echo  ================================================================
+echo   Author     : Luo Yongkang  (LuoYongkang)
+echo   License    : AGPL-3.0-or-later  -  see LICENSE
+echo                Free to use, modify and distribute, including
+echo                commercial use; derivative works must stay
+echo                open source under AGPL-3.0.
+echo   Commercial : Closed-source distribution or closed-source
+echo                integration requires a commercial license.
+echo                Contact: Luo Yongkang  1141673084@qq.com
+echo                See COMMERCIAL.md / COMMERCIAL-LICENSE-TEMPLATE.md
+echo   Offline    : no network, no account check, no telemetry.
+echo   Notice     : LICENSE-INFO.txt  (Chinese + English, full text)
+echo  ================================================================
+echo   This installer will:
+echo     1) enable CEP PlayerDebugMode for the current user,
+echo     2) copy YorkCut Pro into:
+echo        %DEST%
+echo     3) optionally install ffmpeg (used to extract audio).
+echo  ================================================================
+echo.
+choice /C YN /N /M "Do you accept the license terms and want to install?  Y=yes  N=no : "
+if errorlevel 2 goto declined
+if errorlevel 1 goto accepted
+:accepted
+
 reg add "HKCU\Software\Adobe\CSXS.9" /v PlayerDebugMode /t REG_SZ /d 1 /f >nul
 reg add "HKCU\Software\Adobe\CSXS.10" /v PlayerDebugMode /t REG_SZ /d 1 /f >nul
 reg add "HKCU\Software\Adobe\CSXS.11" /v PlayerDebugMode /t REG_SZ /d 1 /f >nul
@@ -52,6 +81,13 @@ goto done
 :fffail
 echo.
 echo   ffmpeg was NOT installed. Run this installer again to retry.
+goto done
+:declined
+echo.
+echo   Installation cancelled - the license terms were not accepted.
+echo   Nothing was changed on this computer.
+echo   Terms  : LICENSE-INFO.txt   (Chinese + English)
+echo   Contact: Luo Yongkang  1141673084@qq.com
 goto done
 :done
 echo.

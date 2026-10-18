@@ -22,8 +22,11 @@
 
 > 👆 **点击封面观看完整演示**（飞书文档）
 
+- 📥 **[下载教程 DOWNLOAD.md](DOWNLOAD.md)** — 从 Releases 下哪个文件、校验、国内加速、常见问题
 - 📦 **[安装教程 INSTALL.md](INSTALL.md)** — 人类和 AI 助手都能照做的安装流程（含无人值守脚本与校验命令）
+- 🔄 **[更新教程 UPDATE.md](UPDATE.md)** — 检查更新 / 覆盖升级（保留设置）/ 回滚 / 彻底重装
 - 📘 **[使用教程 USAGE.md](USAGE.md)** — 素材目录结构、文案格式、生成流程、日志与排错
+- 🗒 [CHANGELOG.md](CHANGELOG.md) — 版本变更记录
 - 📄 [COMMERCIAL.md](COMMERCIAL.md) — 商业许可 | [CONTRIBUTING.md](CONTRIBUTING.md) — 贡献与 CLA | [TRADEMARK.md](TRADEMARK.md) — 名称使用规则
 
 ---

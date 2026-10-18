@@ -146,7 +146,8 @@
         "子文件夹多于现有段：可追加段，或只填已有前 ":
             "More subfolders than segments: append, or fill only the first ",
         "子文件夹少于现有段：可只更新前 ": "Fewer subfolders than segments: update only the first ",
-        "第 ": "Segment "
+        "第 ": "Segment ",
+        "检查更新": "Check updates"
     };
 
     /** 动态文案：正则 → 替换（顺序敏感，先具体后笼统） */

@@ -1,0 +1,67 @@
+================================================================
+ YorkCut Pro 1.0.0 · 许可与来源声明 / License, Credits & Terms
+================================================================
+
+ 软件名称 / Product : YorkCut Pro 批量混剪插件（Premiere Pro CEP 扩展）
+ 版本     / Version : 1.0.0
+ 作者     / Author  : 罗永康（Luo Yongkang）
+ 官网     / Home    : https://github.com/yorkloh/yorkcut-pro
+
+----------------------------------------------------------------
+ 一、许可证 / License
+----------------------------------------------------------------
+ 本软件以 GNU Affero 通用公共许可证第 3 版或更新版本发布：
+ This software is released under the GNU Affero General Public
+ License, version 3 or later (AGPL-3.0-or-later).
+
+   · 可以自由使用、修改、分发，包括商业使用。
+     Free to use, modify and distribute, including commercial use.
+   · 但衍生作品必须以 AGPL-3.0 开源。
+     Derivative works must be released under AGPL-3.0.
+   · 全文见仓库 LICENSE 文件，或 https://www.gnu.org/licenses/agpl-3.0.txt
+
+----------------------------------------------------------------
+ 二、商业许可 / Commercial License
+----------------------------------------------------------------
+ 闭源分发、闭源商用（含集成进闭源产品或闭源服务）需另行取得商业许可：
+ Closed-source distribution or closed-source integration requires a
+ separate commercial license.
+
+   联系 / Contact : 罗永康 · 1141673084@qq.com
+   条款 / Terms   : 见 COMMERCIAL.md 与 COMMERCIAL-LICENSE-TEMPLATE.md
+
+ 购买商业许可不影响 AGPL 已授予开源用户的权利。
+ Buying a commercial license does not restrict the rights the AGPL
+ already grants to open-source users.
+
+----------------------------------------------------------------
+ 三、第三方与来源 / Third parties
+----------------------------------------------------------------
+ · 运行于 Adobe Premiere Pro 的 CEP 环境，需自行拥有合法的 Premiere 授权。
+   Runs inside Adobe Premiere Pro (CEP); a valid Premiere license is required.
+ · 本软件不包含 Adobe 自带的任何模板、素材或字体。
+   No Adobe stock templates, assets or fonts are bundled.
+ · ffmpeg 不打包；安装时可按提示从官方渠道获取（LGPL/GPL，版权归其作者）。
+   ffmpeg is not bundled; the installer may fetch it from its official source.
+ · 高光图形模板（.mogrt）由使用者自备，版权归其作者。
+   Highlight .mogrt templates are user-supplied and remain their authors' property.
+
+----------------------------------------------------------------
+ 四、隐私 / Privacy
+----------------------------------------------------------------
+ · 完全离线：不联网、不校验账号、不上报任何数据。
+   Fully offline: no network calls, no account checks, no telemetry.
+ · 日志为纯文本，保存在本机 %APPDATA%\\YorkCutPro\\logs\\，含素材路径。
+   Logs are plain text under %APPDATA%\\YorkCutPro\\logs\\ and may contain media paths.
+
+----------------------------------------------------------------
+ 五、反馈 / Feedback
+----------------------------------------------------------------
+ 问题与建议 / Issues : https://github.com/yorkloh/yorkcut-pro/issues
+ 商业合作 / Business : 1141673084@qq.com
+
+================================================================
+ Copyright (C) 2026 罗永康（Luo Yongkang）
+ 名称、Logo 与商业许可条款不在 AGPL 授权范围内。
+ The name, logo and commercial-license terms are not covered by the AGPL.
+================================================================

@@ -19,6 +19,10 @@
 
 **Start here**
 
+[![Click to watch the demo](assets/demo-cover.png)](https://my.feishu.cn/wiki/Q5FdwbZjaiZ2FSkUhgfc8GGZnBc?from=from_copylink)
+
+> 👆 **Click the cover to watch the full demo** (Feishu doc, Chinese narration)
+
 - 📦 **[INSTALL.en.md](INSTALL.en.md)** — step-by-step install (human + AI agent, with unattended script and verification)
 - 📘 **[USAGE.en.md](USAGE.en.md)** — folder layout, caption format, generation flow, logs, FAQ
 - 中文文档：[README.md](README.md) · [INSTALL.md](INSTALL.md) · [USAGE.md](USAGE.md)

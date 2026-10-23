@@ -52,6 +52,7 @@
     var genCancel = false;
     var genRunDir = "";   // 本次生成的数据目录（取消时用来清理残留 + 给宿主写 cancel.flag）
     var PROBE_CHUNK = 6;
+    var shortDurWarned = {};   // 已提示过"时长异常短"的素材，避免每轮刷屏
     var weightSession = null;
     var activeCol = 0;
     var zoomDrag = null;
@@ -2251,11 +2252,32 @@
 
         var need = plan.missingPaths || [];
         var isProbe = plan.needProbe || plan.error === "NEED_PROBE" || need.length > 0;
-        var maxAttempts = Math.max(12, Math.min(40, 8 + need.length * 2));
+
+        // 全库还有多少素材没测过时长：决定轮次上限，并用于每轮批量补探。
+        // 之前只用「本轮缺失数」算上限，而本轮往往只缺 1 个 → 上限恒为 12、每轮只探 1 个，
+        // 29 个口播音频要 29 轮，必然卡在「仍缺 1 个」。
+        var pendingAll = 0;
+        try {
+            pendingAll = YorkCutEdit.collectCandidatePaths({
+                rows: script.rows,
+                libraries: libraries,
+                durations: durations,
+                count: state.count,
+                spare: 1
+            }).length;
+        } catch (ePending) {
+            pendingAll = 0;
+        }
+        var perRound = Math.max(PROBE_CHUNK, Math.min(12, pendingAll || PROBE_CHUNK));
+        // 上限要给足余量：pendingAll 每轮都会变小，若按当轮值算会提前触发失败。
+        var maxAttempts = Math.max(10, Math.min(60, Math.ceil(Math.max(need.length, pendingAll) / PROBE_CHUNK) + 6));
         if (!isProbe || attempt >= maxAttempts) {
             var detail = need.length
                 ? ("仍缺时长 " + need.length + " 个：" + need.slice(0, 5).map(baseName).join("，") + (need.length > 5 ? "…" : ""))
                 : (plan.error || "抽签失败");
+            if (pendingAll > need.length) {
+                detail += "（全库还有 " + pendingAll + " 个素材没测过时长，再点一次「新建序列」会继续测）";
+            }
             if (plan.error === "NEED_PROBE" || plan.needProbe) {
                 return Promise.reject(new Error(
                     "素材时长未就绪（已探针 " + attempt + " 轮）。" + detail +
@@ -2273,10 +2295,32 @@
                 spare: 2 + attempt
             });
         }
+        // 本轮缺失很少时，主动多探几个，避免「一次只测 1 个」把几十个素材拖成几十轮。
+        if (need.length < perRound && pendingAll > need.length) {
+            var extraPaths = [];
+            try {
+                extraPaths = YorkCutEdit.collectCandidatePaths({
+                    rows: script.rows,
+                    libraries: libraries,
+                    durations: durations,
+                    count: state.count,
+                    spare: perRound
+                });
+            } catch (eExtra) {
+                extraPaths = [];
+            }
+            var seenNeed = {};
+            need.forEach(function (p) { seenNeed[p] = true; });
+            for (var ei = 0; ei < extraPaths.length && need.length < perRound; ei++) {
+                if (seenNeed[extraPaths[ei]]) continue;
+                seenNeed[extraPaths[ei]] = true;
+                need.push(extraPaths[ei]);
+            }
+        }
         if (!need.length) {
             return Promise.reject(new Error(plan.error || "没有可探针的素材"));
         }
-        log("  第 " + (attempt + 1) + "/" + maxAttempts + " 轮抽签命中 " + need.length + " 个待测时长文件（全库随机，非整库扫描）");
+        log("  第 " + (attempt + 1) + "/" + maxAttempts + " 轮抽签命中 " + need.length + " 个待测时长文件（全库随机，非整库扫描；全库未测 " + pendingAll + " 个）");
         return probePathsChunked(need).then(function () {
             return planProbeLoop(script, libraries, texts, attempt + 1);
         });
@@ -2407,11 +2451,23 @@
                 }
                 var map = result.durations || {};
                 var got = 0;
+                var shortList = [];
                 Object.keys(map).forEach(function (path) {
                     rememberDuration(path, map[path], "premiere");
-                    if (Number(map[path]) > 0) got += 1;
+                    var sec = Number(map[path]);
+                    if (sec > 0) got += 1;
+                    // 音频/视频被读成 < 0.5 秒，多半是文件头损坏或不是真媒体；提示一次，别让人以为探针是准的
+                    if (sec > 0 && sec < 0.5 && !shortDurWarned[path]) {
+                        shortDurWarned[path] = true;
+                        shortList.push(baseName(path) + " " + sec.toFixed(2) + "s");
+                    }
                 });
                 log("    本片读到时长 " + got + "/" + chunk.length);
+                if (shortList.length) {
+                    log("    警告：" + shortList.length + " 个素材时长异常短（<0.5s）：" +
+                        shortList.slice(0, 5).join("，") + (shortList.length > 5 ? "…" : "") +
+                        "。这多半是文件头损坏或不是真正的音视频；若确实不该这么短，请在 Premiere 里试播确认后再用。", true);
+                }
                 return next();
             });
         }

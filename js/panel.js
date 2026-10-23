@@ -2356,26 +2356,37 @@
     }
 
     function prefillFfprobe(libraries) {
-        var exe = String(state.ffprobePath || "").replace(/^\s+|\s+$/g, "");
+        // 不用手填路径：和 ffmpeg 同目录就能自动找到 ffprobe
+        var exe = resolveFfprobe();
         if (!exe) return Promise.resolve();
         var paths = [];
+        var suspect = [];
         (libraries || []).forEach(function (lib) {
             (lib.tracks || []).forEach(function (t) {
                 if (!t.root) return;
                 (t.rels || []).forEach(function (rel) {
                     var abs = YorkCutEdit.absJoin(t.root, rel);
-                    if (!(Number(durations[abs]) > 0)) paths.push(abs);
+                    var had = Number(durations[abs]) || 0;
+                    if (!(had > 0)) {
+                        paths.push(abs);
+                    } else if (had < 0.5) {
+                        // 已经缓存但可疑（<0.5s）：Premiere 探针对部分 VBR mp3 会读错，
+                        // 必须再用 ffprobe 复核一次，否则错值永远留在缓存里。
+                        suspect.push(abs);
+                    }
                 });
             });
         });
+        suspect.forEach(function (p) { if (paths.indexOf(p) < 0) paths.push(p); });
         if (!paths.length) return Promise.resolve();
         if (!window.cep || !window.cep.process || !window.cep.process.createProcess) {
-            log("  ffprobe 路径已填，但当前 CEP 不能启动外部程序，仍用 Premiere 探针。");
+            log("  找到 ffprobe（" + baseName(exe) + "），但当前 CEP 不能启动外部程序，仍用 Premiere 探针。");
             return Promise.resolve();
         }
-        var limit = Math.min(paths.length, 40);
+        var limit = Math.min(paths.length, 60);
         if (paths.length > limit) log("  ffprobe 本次只预扫前 " + limit + " 个，其余交给 Premiere。");
-        log("  ffprobe 预扫 " + limit + " 个缺时长文件（可选，失败不影响生成）…");
+        log("  ffprobe 预扫 " + limit + " 个（缺时长 " + (paths.length - suspect.length) +
+            " 个 + 可疑短时长 " + suspect.length + " 个）…");
         var i = 0;
         function step() {
             if (i >= limit) {
@@ -2479,6 +2490,12 @@
         if (!(n > 0) || !path) return;
         var prev = Number(durations[path]) || 0;
         var prevSrc = durationMeta[path] || "";
+        // Premiere 探针对部分 VBR mp3 会读成极短值（如 0.185s）。已有 ffprobe 的合理值时不覆盖。
+        if (source === "premiere" && prevSrc === "ffprobe" && prev >= 0.5 && !(n >= 0.5)) {
+            log("  忽略 Premiere 的可疑短时长：" + baseName(path) + " " + n.toFixed(2) +
+                "s（保留 ffprobe 的 " + prev.toFixed(2) + "s）", true);
+            return;
+        }
         if (source === "premiere" && prevSrc === "ffprobe" && prev > 0 && Math.abs(prev - n) > 0.15) {
             log("  时长以 Premiere 为准覆盖 ffprobe：" + baseName(path) + " " + prev.toFixed(2) + "s → " + n.toFixed(2) + "s");
         }
@@ -2708,8 +2725,28 @@
         return "";
     }
 
-    function savedFfmpegPath() {
-        try {
+    /**
+     * 找 ffprobe.exe：不填路径也能用（和 ffmpeg 同目录）。
+     * 顺序：手填 → ffmpeg 路径替换 → 已保存的 ffmpeg 路径替换 → 插件 tools\ffmpeg。
+     */
+    function resolveFfprobe() {
+        var cands = [];
+        var given = String(state.ffprobePath || "").replace(/^\s+|\s+$/g, "");
+        if (given) cands.push(given);
+        var ff = resolveFfmpeg();
+        if (ff) cands.push(ff.replace(/ffmpeg(\.exe)?$/i, "ffprobe$1"));
+        var saved = savedFfmpegPath();
+        if (saved) cands.push(saved.replace(/ffmpeg(\.exe)?$/i, "ffprobe$1"));
+        var ext = "";
+        try { ext = extensionRoot(); } catch (eExt) { ext = ""; }
+        if (ext) cands.push(join(join(join(ext, "tools"), "ffmpeg"), "ffprobe.exe"));
+        for (var i = 0; i < cands.length; i++) {
+            if (cands[i] && fileExists(cands[i])) return cands[i];
+        }
+        return "";
+    }
+
+    function savedFfmpegPath() {        try {
             var ext = extensionRoot();
             if (!ext) return "";
             var text = readText(join(join(ext, "tools"), "ffmpeg-path.txt"));
